@@ -3,25 +3,25 @@ from datetime import datetime
 import pandas as pd
 import os
 
-# INFORMAÇÕES TABELA PADRÃO 
+# INFORMAÇÕES TABELA TESTE 
 st_pad = 0.22
 com_pis_pad = 0.3150
 icms_sem_pis_pad = 0.40
 icms_com_pis_pad = 0.4750
 custo_operacional_pad = 0.12
 
-# INFORMAÇÕES TABELA MAREB
+# INFORMAÇÕES TABELA TESTE
 st_mareb = 0.10
 deb_cred = 0.20
 
-# INFORMAÇÕES TABELA COTEFÁCIL
+# INFORMAÇÕES TABELA TESTE
 st_cotef = 0.17
 com_pis_cotef = 0.2650
 icms_sem_pis_cotef = 0.35
 icms_com_pis_cotef = 0.4250
 custo_operacional_cotef = 0.12
 
-# INFORMAÇÕES TABELA PEDIDO ELETRÔNICO
+# INFORMAÇÕES TABELA TESTE 
 st_pe = 0.20
 com_pis_pe = 0.2950
 icms_sem_pis_pe = 0.38
@@ -69,13 +69,13 @@ def calcular_valores(df, custo_operacional, custo_col="CUSTO CAP"):
 # FUNÇÃO PARA FILTRAR OS PRODUTOS COM BASE NAS REGRAS DEFINIDAS
 def filtrar_produtos(df):
     # FABRICANTES A SEREM REMOVIDOS COMPLETAMENTE   
-    fabricantes_para_remover = ["SHELL NUTRY", "DIVINA", "IRIDIUM", "QLB"]
+    fabricantes_para_remover = ["TESTE", "TESTE", "TESTE", "TESTE"]
 
     # REMOVER PRODUTOS DOS FABRICANTES LISTADOS
     df = df[~df["FABRICANTE"].str.upper().isin(fabricantes_para_remover)]
     
-    # REMOVER APENAS OS PRODUTOS 'ABOVE' QUE TÊM O PREÇO 6,99 (CLASSICOS)
-    df = df[~((df["FABRICANTE"].str.upper() == "ABOVE") & (df["VDA REAL C/ ST"] == 6.99))]
+    # REMOVER APENAS OS PRODUTOS 'TESTE' QUE TÊM O PREÇO 6,99 (CLASSICOS)
+    df = df[~((df["FABRICANTE"].str.upper() == "TESTE") & (df["VDA REAL C/ ST"] == 6.99))]
     
     return df
 
@@ -166,13 +166,13 @@ def processar_planilhas():
     planilha_padrao = pd.read_excel(r"P:\\INTELIGENCIA\\COMERCIAL\\Simulador Margem\\Bases\\AdmPreço.xlsx")
     planilha_padrao.columns = planilha_padrao.columns.str.strip()  # REMOVE OS ESPAÇOS EXTRAS
 
-    planilha_mareb = pd.read_excel(r"P:\\INTELIGENCIA\\COMERCIAL\\Simulador Margem\\Bases\\AdmMareb.xlsx")
+    planilha_mareb = pd.read_excel(r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE.xlsx")
     planilha_mareb.columns = planilha_mareb.columns.str.strip()  # REMOVE OS ESPAÇOS EXTRAS
 
-    planilha_cotef = pd.read_excel(r"P:\\INTELIGENCIA\\COMERCIAL\\Simulador Margem\\Bases\\AdmCotef.xlsx")
+    planilha_cotef = pd.read_excel(r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE.xlsx")
     planilha_cotef.columns = planilha_cotef.columns.str.strip()  # REMOVE OS ESPAÇOS EXTRAS
 
-    planilha_ped = pd.read_excel(r"P:\\INTELIGENCIA\\COMERCIAL\\Simulador Margem\\Bases\\AdmPed.xlsx")
+    planilha_ped = pd.read_excel(r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE.xlsx")
     planilha_ped.columns = planilha_ped.columns.str.strip()  # REMOVE OS ESPAÇOS EXTRAS
 
     # FILTRAR APENAS OS PRODUTOS COM ESTOQUE DISPONÍVEL
@@ -182,10 +182,10 @@ def processar_planilhas():
     planilha_ped = planilha_ped[planilha_ped["EST DISP"] > 0]
 
     # EXCLUIR LINHAS ONDE O FABRICANTE É "BRINDES"
-    planilha_padrao = planilha_padrao[planilha_padrao["FABRICANTE"].str.upper() != "BRINDES"]
-    planilha_mareb = planilha_mareb[planilha_mareb["FABRICANTE"].str.upper() != "BRINDES"]
-    planilha_cotef = planilha_cotef[planilha_cotef["FABRICANTE"].str.upper() != "BRINDES"]
-    planilha_ped = planilha_ped[planilha_ped["FABRICANTE"].str.upper() != "BRINDES"]
+    planilha_padrao = planilha_padrao[planilha_padrao["FABRICANTE"].str.upper() != "TESTE"]
+    planilha_mareb = planilha_mareb[planilha_mareb["FABRICANTE"].str.upper() != "TESTE"]
+    planilha_cotef = planilha_cotef[planilha_cotef["FABRICANTE"].str.upper() != "TESTE"]
+    planilha_ped = planilha_ped[planilha_ped["FABRICANTE"].str.upper() != "TESTE"]
 
     # CALCULAR VALORES PARA CADA PLANILHA
     planilha_padrao = calcular_valores(planilha_padrao, custo_operacional_pad)
@@ -219,7 +219,7 @@ def processar_planilhas():
     ]]
 
     # LOCALIZAR O ARQUIVO DE COTAÇÃO MAIS RECENTE
-    diretorio_cotacao = r"P:\\INTELIGENCIA\\COMPRAS\\PRODUTOS_COTAÇÃO\\"
+    diretorio_cotacao = r"P:\\TESTE\\TESTE\\PRODUTOS_COTAÇÃO\\"
     caminho_cotacao = localizar_arquivo_mais_recente(diretorio_cotacao).strip()  # REMOVE OS ESPAÇOS EXTRAS
 
     # ASSOCIA AS COLUNAS "MENOR", "MEDIANA", "MAIOR" DA COTAÇÃO
@@ -228,7 +228,7 @@ def processar_planilhas():
 
     # NOME DO ARQUIVO PRINCIPAL COM DATA ATUAL
     data_atual = datetime.now().strftime("%d-%m-%Y")
-    output_path_principal = f"P:\\INTELIGENCIA\\PRECIFICACAO\\Python\\VERIFICAR_MARGEM\\Margens produtos\\Margens_produtos_{data_atual}.xlsx"
+    output_path_principal = f"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE\\Margens_produtos_{data_atual}.xlsx"
 
     # GERAR PLANILHA PRINCIPAL COM AS ABAS PARA CADA TABELA
     gerar_planilha_principal([
@@ -239,10 +239,10 @@ def processar_planilhas():
     ], output_path_principal)
 
     # GERAR PLANILHAS DE ALERTA PARA CADA TABELA
-    gerar_planilha_alerta(planilha_padrao, f"P:\\INTELIGENCIA\\COMERCIAL\\SITUAÇÃO MARGEM\\Checar_margem_padrao {data_atual}.xlsx")
-    gerar_planilha_alerta(planilha_mareb, f"P:\\INTELIGENCIA\\COMERCIAL\\SITUAÇÃO MARGEM\\Checar_margem_mareb {data_atual}.xlsx", tipo="mareb")
-    gerar_planilha_alerta(planilha_cotef, f"P:\\INTELIGENCIA\\COMERCIAL\\SITUAÇÃO MARGEM\\Checar_margem_cotef {data_atual}.xlsx")
-    gerar_planilha_alerta(planilha_ped, f"P:\\INTELIGENCIA\\COMERCIAL\\SITUAÇÃO MARGEM\\Checar_margem_ped {data_atual}.xlsx")
+    gerar_planilha_alerta(planilha_padrao, f"P:\\TESTE\\TESTE\\TESTE\\Checar_margem_padrao {data_atual}.xlsx")
+    gerar_planilha_alerta(planilha_mareb, f"P:\\TESTE\\TESTE\\TESTE\\Checar_margem_mareb {data_atual}.xlsx", tipo="mareb")
+    gerar_planilha_alerta(planilha_cotef, f"P:\\TESTE\\TESTE\\TESTE\\Checar_margem_cotef {data_atual}.xlsx")
+    gerar_planilha_alerta(planilha_ped, f"P:\\TESTE\\TESTE\\TESTE\\Checar_margem_ped {data_atual}.xlsx")
 
     # MENSAGENS DE CONFIRMAÇÃO
     print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: Checar_margem_padrao {data_atual}.xlsx")
