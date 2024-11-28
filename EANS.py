@@ -10,7 +10,7 @@ import re
 import os
 
 # FAZENDO A CONEXÃO COM O BANCO DE DADOS 
-dados_conexao = 'DRIVER={SQL Server};SERVER=SRVDELL;DATABASE=MOINHO;UID=servicefarma;PWD=sf@2023#d'
+dados_conexao = ''
 conexao = pyodbc.connect(dados_conexao)
 
 # EXTRAINDO INFORMAÇÕES DO BANCO COM SQL
@@ -33,18 +33,18 @@ WHERE
 '''
 
 # CARREGAR A CONSULTA DO SQL
-dismed_df = pd.read_sql_query(planilha_EAN, conexao)
+codigo_df = pd.read_sql_query(planilha_EAN, conexao)
 
 # FECHANDO A CONEXÃO COM O BANCO
 conexao.close()
 
 # LIMPEZA DOS DADOS SQL
-dismed_df['EAN'] = dismed_df['EAN'].astype(str).str.strip()
-dismed_df['EAN'] = dismed_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
-dismed_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
+codigo_df['EAN'] = dismed_df['EAN'].astype(str).str.strip()
+codigo_df['EAN'] = dismed_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
+codigo_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
 
 # FILTRANDO PARA EXCLUIR FABRICANTES "BRINDES"
-filtered_df = dismed_df[dismed_df['FABRICANTE'] != 'BRINDES']
+filtered_df = codigo_df[codigo_df['FABRICANTE'] != 'BRINDES']
 
 # ADICIONANDO A COLUNA "DIGITOS EAN"
 filtered_df['DIGITOS EAN'] = filtered_df['EAN'].apply(lambda x: len(str(int(x))) if pd.notnull(x) else 0)
@@ -56,9 +56,9 @@ alerta_df = filtered_df[(filtered_df['DIGITOS EAN'] != 13)]
 data_atual = datetime.now().strftime('%d-%m-%Y')
 
 # NOME DOS ARQUIVOS DE SAÍDA
-alerta1 = r"P:\\DEPTO_FARMACEUTICO\\ALERTA_EAN\\EAN_ALERTA {data_atual}.xlsx"
-alerta2 = r"P:\\INTELIGENCIA\\PRECIFICACAO\\Python\\ALERTA_EAN\\EAN\\EAN_ALERTA {data_atual}.xlsx"
-alerta3 = r"P:\\INTELIGENCIA\\COMPRAS\\ALERTA_EAN\\EAN_ALERTA {data_atual}.xlsx"
+alerta1 = r"P:\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
+alerta2 = r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
+alerta3 = r"P:\\TESTE\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
 
 # CRIAR DIRETORIOS SE ELES NAO EXISTIREM
 os.makedirs(os.path.dirname(alerta1), exist_ok=True)
