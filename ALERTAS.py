@@ -19,7 +19,7 @@ dados_conexao = ''
 conexao = pyodbc.connect(dados_conexao)
 
 # EXTRAINDO INFORMAÇÕES DO BANCO COM SQL
-planilha_dismed = '''
+planilha_teste = '''
 SET NOCOUNT ON
 
 SELECT 
@@ -52,7 +52,7 @@ ORDER BY
 '''
 
 # CARREGAR A CONSULTA DO SQL
-dismed_df = pd.read_sql_query(planilha_dismed, conexao)
+codigo_df = pd.read_sql_query(planilha_teste, conexao)
 
 # FECHANDO A CONEXÃO COM O BANCO
 conexao.close()
@@ -61,9 +61,9 @@ conexao.close()
 data_atual = datetime.now().strftime('%d-%m-%Y')
 
 # LIMPEZA DOS DADOS SQL
-dismed_df['EAN'] = dismed_df['EAN'].astype(str).str.strip()
-dismed_df['EAN'] = dismed_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
-dismed_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
+codigo_df['EAN'] = codigo_df['EAN'].astype(str).str.strip()
+codigo_df['EAN'] = codigo_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
+codigo_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
 
 # VERIFICA O NOME CORRETO DA COLUNA EAN NA PLANILHA PMC
 pmc_df = pd.read_excel(planilhas_pmc)
@@ -84,20 +84,20 @@ pmpf_df['EAN'] = pd.to_numeric(pmpf_df[ean_col_pmpf], errors='coerce')  # CONVER
 
 # ATUALIZANDO PMC COM BASE NO MERGE
 if 'PMC 18%' in pmc_df.columns:
-    dismed_df = dismed_df.merge(pmc_df[['EAN', 'PMC 18%']], on='EAN', how='left')  # MERGE COM PMC
-    dismed_df['PMC'] = dismed_df.apply(lambda row: row['PMC 18%'] if row['PMC'] == 0.00 else row['PMC'], axis=1)  # ATUALIZANDO PMC
-    dismed_df.drop(columns=['PMC 18%'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
+    codigo_df = codigo_df.merge(pmc_df[['EAN', 'PMC 18%']], on='EAN', how='left')  # MERGE COM PMC
+    codigo_df['PMC'] = codigo_df.apply(lambda row: row['PMC 18%'] if row['PMC'] == 0.00 else row['PMC'], axis=1)  # ATUALIZANDO PMC
+    codigo_df.drop(columns=['PMC 18%'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
 
 # ATUALIZANDO PMPF COM BASE NO MERGE
 if 'PMPF' in pmpf_df.columns:
-    dismed_df = dismed_df.merge(pmpf_df[['EAN', 'PMPF']], on='EAN', how='left', suffixes=('', '_new'))  # MERGE COM PMPF
-    dismed_df['PMPF'] = dismed_df.apply(lambda row: row['PMPF_new'] if row['PMPF'] == 0.00 else row['PMPF'], axis=1)  # ATUALIZANDO PMPF
-    dismed_df.drop(columns=['PMPF_new'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
+    codigo_df = codigo_df.merge(pmpf_df[['EAN', 'PMPF']], on='EAN', how='left', suffixes=('', '_new'))  # MERGE COM PMPF
+    codigo_df['PMPF'] = codigo_df.apply(lambda row: row['PMPF_new'] if row['PMPF'] == 0.00 else row['PMPF'], axis=1)  # ATUALIZANDO PMPF
+    codigo_df.drop(columns=['PMPF_new'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
 
 # NOME DOS ARQUIVOS DE SAÍDA
-alerta1 = r"P:\\ESCRITA_FISCAL\\ALERTA_PMC_PMPF\\ALERTA {data_atual}.xlsx"
-alerta2 = r"P:\\DEPTO_FARMACEUTICO\\ALERTA_PMC_PMPF\\ALERTA {data_atual}.xlsx"
-alerta3 = r"P:\\INTELIGENCIA\\PRECIFICACAO\\Python\\ALERTA PMC_PMPF\\ALERTA\\ALERTA {data_atual}.xlsx"
+alerta1 = r"P:\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
+alerta2 = r"P:\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
+alerta3 = r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
 
 
 # CRIAR DIRETORIOS SE ELES NAO EXISTIREM
