@@ -11,11 +11,11 @@ import re
 import os
 
 # LOCAL DAS PLANILHAS BASES
-planilhas_pmc = r"P:\\INTELIGENCIA\\PRECIFICACAO\\Python\\ALERTA PMC_PMPF\\BASES\\PMC.xlsx"
-planilhas_pmpf = r"P:\\INTELIGENCIA\\PRECIFICACAO\\Python\\ALERTA PMC_PMPF\\BASES\\PMPF.xlsx"
+planilhas_pmc = r""
+planilhas_pmpf = r""
 
 # FAZENDO A CONEXÃO COM O BANCO DE DADOS 
-dados_conexao = 'DRIVER={SQL Server};SERVER=SRVDELL;DATABASE=MOINHO;UID=servicefarma;PWD=sf@2023#d'
+dados_conexao = ''
 conexao = pyodbc.connect(dados_conexao)
 
 # EXTRAINDO INFORMAÇÕES DO BANCO COM SQL
