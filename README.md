@@ -1,7 +1,7 @@
 <h1 align="center">🧰 Meus-projetos (Python)</h1>
 
 <p align="center">
-  Scripts em Python para o dia a dia no varejo: verificação de EAN, alertas, cálculo de margem e conversão de XML de NF-e.
+  Scripts em Python para o dia a dia no varejo: verificação de EAN, alertas de preço, cálculo de margem e conversão de XML de NF-e.
 </p>
 
 <p align="center">
@@ -17,11 +17,11 @@
 ## ✨ O que tem aqui
 
 - **`ALERTAS.py`** – Ajuste de produtos sem PMC/PMPF, cruzando base SQL + planilhas de PMC/PMPF e gerando planilhas de alerta em Excel.  
-- **`EANS.py`** – Identificação de EANs inválidos (diferente de 13 dígitos) e geração de relatório de inconsistências.  
-- **`Margem.py`** – Cálculo de margem bruta e líquida por produto, com planilhas de alerta e comparação com cotações.  
-- **`convert_Xml.py`** – Aplicação desktop (GUI) que converte XML de NF-e em planilha Excel pronta para análise fiscal.
+- **`EANS.py`** – Identifica EANs inválidos (diferente de 13 dígitos) e gera relatório de inconsistências.  
+- **`Margem.py`** – Calcula margem bruta e líquida por produto, gera planilhas de alerta e compara com cotações da concorrência.  
+- **`convert_Xml.py`** – Aplicação desktop (GUI) que converte XML de NF-e em planilha Excel pronta para cálculos fiscais.
 
-> Cada script é independente e pode ser usado em rotinas rápidas do dia a dia.
+> Cada script é independente e pode ser usado isoladamente nas rotinas do dia a dia.
 
 ---
 
