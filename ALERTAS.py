@@ -6,11 +6,10 @@ a partir de dados do banco (SQL Server) + planilhas base PMC/PMPF.
 """
 
 from datetime import datetime
-import os
-import re
-
 import pandas as pd
 import pyodbc
+import os
+import re
 
 # =========================
 # CONFIGURAÇÕES / PARÂMETROS
@@ -60,7 +59,6 @@ ORDER BY
     pro.descricao;
 """
 
-
 # =========================
 # FUNÇÕES AUXILIARES
 # =========================
@@ -70,7 +68,6 @@ def limpar_ean_serie(serie: pd.Series) -> pd.Series:
     serie = serie.astype(str).str.strip()
     serie = serie.apply(lambda x: re.sub(r"\D", "", x))
     return pd.to_numeric(serie, errors="coerce")
-
 
 # =========================
 # PIPELINE PRINCIPAL
