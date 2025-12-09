@@ -16,10 +16,12 @@
 
 ## ✨ O que tem aqui
 
-- **`ALERTAS.py`** – Ajuste de produtos sem PMC/PMPF, cruzando base SQL + planilhas de PMC/PMPF e gerando planilhas de alerta em Excel.  
-- **`EANS.py`** – Identifica EANs inválidos (diferente de 13 dígitos) e gera relatório de inconsistências.  
-- **`Margem.py`** – Calcula margem bruta e líquida por produto, gera planilhas de alerta e compara com cotações da concorrência.  
-- **`convert_Xml.py`** – Aplicação desktop (GUI) que converte XML de NF-e em planilha Excel pronta para cálculos fiscais.
+Dentro da pasta `desenvolvimentos/` estão os scripts principais:
+
+- **`alertas.py`** – Ajuste de produtos sem PMC/PMPF, cruzando base SQL + planilhas de PMC/PMPF e gerando planilhas de alerta em Excel.  
+- **`ajustes_eans.py`** – Identifica EANs inválidos (diferente de 13 dígitos) e gera relatório de inconsistências.  
+- **`margem.py`** – Calcula margem bruta e líquida por produto, gera planilhas de alerta e compara com cotações da concorrência.  
+- **`convert_XML.py`** – Aplicação desktop (GUI) que converte XML de NF-e em planilha Excel pronta para cálculos fiscais.
 
 > Cada script é independente e pode ser usado isoladamente nas rotinas do dia a dia.
 
@@ -29,9 +31,10 @@
 
 ```text
 Meus-projetos/
-├─ ALERTAS.py          # Ajuste de produtos sem PMC/PMPF e geração de alertas
-├─ EANS.py             # Validação de EANs (dígitos incorretos)
-├─ Margem.py           # Cálculo de margens (bruta e líquida) e planilhas de alerta
-├─ convert_Xml.py      # Aplicação desktop para converter XML de NF-e em Excel
-├─ requirements.txt    # Dependências do projeto
-└─ README.md           # Esta documentação
+├─ desenvolvimentos/
+│  ├─ alertas.py         # Ajuste de produtos sem PMC/PMPF e geração de alertas
+│  ├─ ajustes_eans.py    # Validação de EANs (dígitos incorretos)
+│  ├─ convert_XML.py     # Aplicação desktop para converter XML de NF-e em Excel
+│  └─ margem.py          # Cálculo de margens (bruta e líquida) e planilhas de alerta
+├─ requirements.txt       # Dependências do projeto
+└─ README.md              # Esta documentação
