@@ -8,7 +8,7 @@
   <img alt="repo size" src="https://img.shields.io/github/repo-size/chrisbenini/Meus-projetos?style=flat-square">
   <img alt="last commit" src="https://img.shields.io/github/last-commit/chrisbenini/Meus-projetos?style=flat-square">
   <img alt="issues" src="https://img.shields.io/github/issues/chrisbenini/Meus-projetos?style=flat-square">
-  <img alt="license" src="https://img.shields.io/github/license/chrisbenini/Meus-projetos?style=flat-square">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-green?style=flat-square">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square&logo=python">
 </p>
 
