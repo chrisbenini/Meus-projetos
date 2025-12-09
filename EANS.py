@@ -1,25 +1,25 @@
-# IMPORTANDO AS BIBLIOTECAS QUE SERAM USADAS NO CÓDIGO
+"""
+EANS.py
 
-from datetime import datetime, timedelta
+Identificação de EANs inválidos (diferente de 13 dígitos)
+a partir de dados do banco (SQL Server).
+"""
+
+from datetime import datetime
 import pandas as pd
-import numpy as np
-import sqlite3
 import pyodbc
-import sys
-import re
 import os
+import re
 
-# FAZENDO A CONEXÃO COM O BANCO DE DADOS 
-dados_conexao = ''
-conexao = pyodbc.connect(dados_conexao)
+# String de conexão (preencher conforme ambiente)
+dados_conexao = ""
 
-# EXTRAINDO INFORMAÇÕES DO BANCO COM SQL
-planilha_EAN = '''
+SQL_EAN = """
 SELECT 
-    prd.cd_prod AS "CODIGO",
-    COALESCE(NULLIF(prd.cd_barra, ''), '') AS "EAN",
-	prd.descricao AS "PRODUTO",
-    fab.descricao AS "FABRICANTE"
+    prd.cd_prod AS CODIGO,
+    COALESCE(NULLIF(prd.cd_barra, ''), '') AS EAN,
+    prd.descricao AS PRODUTO,
+    fab.descricao AS FABRICANTE
 FROM 
     produto prd
 INNER JOIN 
@@ -30,53 +30,49 @@ WHERE
     prd.cd_barra IS NOT NULL
     AND prd.cd_barra != ''
     AND prc.cd_tabela = 'PADRAO';
-'''
+"""
 
-# CARREGAR A CONSULTA DO SQL
-codigo_df = pd.read_sql_query(planilha_EAN, conexao)
+def limpar_ean_serie(serie: pd.Series) -> pd.Series:
+    """Remove espaços, caracteres não numéricos e converte para número."""
+    serie = serie.astype(str).str.strip()
+    serie = serie.apply(lambda x: re.sub(r"\D", "", x))
+    return pd.to_numeric(serie, errors="coerce")
 
-# FECHANDO A CONEXÃO COM O BANCO
-conexao.close()
+def main() -> None:
+    # 1) Buscar dados do banco
+    conexao = pyodbc.connect(dados_conexao)
+    df = pd.read_sql_query(SQL_EAN, conexao)
+    conexao.close()
 
-# LIMPEZA DOS DADOS SQL
-codigo_df['EAN'] = dismed_df['EAN'].astype(str).str.strip()
-codigo_df['EAN'] = dismed_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
-codigo_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
+    # 2) Limpeza do EAN
+    df["EAN"] = limpar_ean_serie(df["EAN"])
 
-# FILTRANDO PARA EXCLUIR FABRICANTES "BRINDES"
-filtered_df = codigo_df[codigo_df['FABRICANTE'] != 'BRINDES']
+    # 3) Remover fabricante "BRINDES"
+    df = df[df["FABRICANTE"] != "BRINDES"]
 
-# ADICIONANDO A COLUNA "DIGITOS EAN"
-filtered_df['DIGITOS EAN'] = filtered_df['EAN'].apply(lambda x: len(str(int(x))) if pd.notnull(x) else 0)
+    # 4) Adicionar coluna com quantidade de dígitos
+    df["DIGITOS EAN"] = df["EAN"].apply(
+        lambda x: len(str(int(x))) if pd.notnull(x) else 0
+    )
 
-# FILTRANDO EANS COM ERRO (MENOS DE 13 OU MAIS DE 13 DÍGITOS)
-alerta_df = filtered_df[(filtered_df['DIGITOS EAN'] != 13)]
+    # 5) Filtrar EANs com erro (≠ 13 dígitos)
+    alerta_df = df[df["DIGITOS EAN"] != 13]
 
-# IDENTIFICANDO A DATA ATUAL
-data_atual = datetime.now().strftime('%d-%m-%Y')
+    data_atual = datetime.now().strftime("%d-%m-%Y")
 
-# NOME DOS ARQUIVOS DE SAÍDA
-alerta1 = r"P:\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
-alerta2 = r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
-alerta3 = r"P:\\TESTE\\TESTE\\TESTE\\EAN_ALERTA {data_atual}.xlsx"
+    output_paths = [
+        r"P:\TESTE\TESTE\EAN_ALERTA {data_atual}.xlsx",
+        r"P:\TESTE\TESTE\TESTE\TESTE\TESTE\EAN_ALERTA {data_atual}.xlsx",
+        r"P:\TESTE\TESTE\TESTE\EAN_ALERTA {data_atual}.xlsx",
+    ]
 
-# CRIAR DIRETORIOS SE ELES NAO EXISTIREM
-os.makedirs(os.path.dirname(alerta1), exist_ok=True)
-os.makedirs(os.path.dirname(alerta2), exist_ok=True)
-os.makedirs(os.path.dirname(alerta3), exist_ok=True)
+    for path_template in output_paths:
+        path = path_template.format(data_atual=data_atual)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        alerta_df.to_excel(path, index=False)
+        print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {path}")
 
-# SALVANDO O DATAFRAME ATUALIZADO EM AMBOS OS ARQUIVOS
-alerta_df.to_excel(alerta1.format(data_atual=data_atual), index=False)
-alerta_df.to_excel(alerta2.format(data_atual=data_atual), index=False)
-alerta_df.to_excel(alerta2.format(data_atual=data_atual), index=False)
+    print("Total de EANs com problema:", len(alerta_df))
 
-# RESULTADO FINAL
-print(alerta_df)
-
-# MENSAGENS DE CONFIRMAÇÃO
-print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {alerta1.format(data_atual=data_atual)}")
-print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {alerta2.format(data_atual=data_atual)}")
-
-
-
-
+if __name__ == "__main__":
+    main()
