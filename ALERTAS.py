@@ -1,38 +1,47 @@
+"""
+ALERTAS.py
 
-# IMPORTANDO AS BIBLIOTECAS QUE SERAM USADAS NO CÓDIGO
+Ajuste de produtos sem PMC/PMPF e geração de planilhas de alerta
+a partir de dados do banco (SQL Server) + planilhas base PMC/PMPF.
+"""
 
-from datetime import datetime, timedelta
-import pandas as pd
-import numpy as np
-import sqlite3
-import pyodbc
-import sys
-import re
+from datetime import datetime
 import os
+import re
 
-# LOCAL DAS PLANILHAS BASES
-planilhas_pmc = r""
-planilhas_pmpf = r""
+import pandas as pd
+import pyodbc
 
-# FAZENDO A CONEXÃO COM O BANCO DE DADOS 
-dados_conexao = ''
-conexao = pyodbc.connect(dados_conexao)
+# =========================
+# CONFIGURAÇÕES / PARÂMETROS
+# =========================
 
-# EXTRAINDO INFORMAÇÕES DO BANCO COM SQL
-planilha_teste = '''
-SET NOCOUNT ON
+# Caminho das planilhas base de PMC e PMPF
+planilha_pmc_path = r""  # ex: r"P:\TESTE\BASES\PMC.xlsx"
+planilha_pmpf_path = r""  # ex: r"P:\TESTE\BASES\PMPF.xlsx"
+
+# String de conexão com o banco (preencher de acordo com o ambiente)
+dados_conexao = ""  # ex: "Driver={SQL Server};Server=...;Database=...;Trusted_Connection=yes;"
+
+
+# =========================
+# CONSULTA SQL
+# =========================
+
+SQL_ALERTAS = """
+SET NOCOUNT ON;
 
 SELECT 
-    pro.cd_prod AS 'CODIGO',
-    pro.cd_barra AS 'EAN',
-    pro.descricao AS 'DESCRICAO',
-    fab.descricao AS 'FABRICANTE',
-    pro.cd_prod_ncm AS 'NCM',
-    ISNULL(pmc.estado,'') AS 'UF',
-    CONVERT(NUMERIC(15,2),ISNULL(pmc.vl_preco,0)) AS 'PMC',
-    CONVERT(NUMERIC(15,2),ISNULL(pmc.ValorPMPF,0)) AS 'PMPF',
-    CONVERT(INT,est.qtde) AS 'ESTOQUE',
-    CONVERT(CHAR(10),GETDATE(),103) + ' ' + CONVERT(CHAR(5),GETDATE(),108) AS 'DATA HORA CONSULTA'
+    pro.cd_prod AS CODIGO,
+    pro.cd_barra AS EAN,
+    pro.descricao AS DESCRICAO,
+    fab.descricao AS FABRICANTE,
+    pro.cd_prod_ncm AS NCM,
+    ISNULL(pmc.estado,'') AS UF,
+    CONVERT(NUMERIC(15,2),ISNULL(pmc.vl_preco,0)) AS PMC,
+    CONVERT(NUMERIC(15,2),ISNULL(pmc.ValorPMPF,0)) AS PMPF,
+    CONVERT(INT,est.qtde) AS ESTOQUE,
+    CONVERT(CHAR(10),GETDATE(),103) + ' ' + CONVERT(CHAR(5),GETDATE(),108) AS [DATA HORA CONSULTA]
 FROM
     produto pro
     JOIN fabric fab ON fab.cd_fabric = pro.cd_fabric
@@ -49,74 +58,87 @@ WHERE
 ORDER BY
     fab.descricao,
     pro.descricao;
-'''
-
-# CARREGAR A CONSULTA DO SQL
-codigo_df = pd.read_sql_query(planilha_teste, conexao)
-
-# FECHANDO A CONEXÃO COM O BANCO
-conexao.close()
-
-# IDENTIFICANDO A DATA ATUAL
-data_atual = datetime.now().strftime('%d-%m-%Y')
-
-# LIMPEZA DOS DADOS SQL
-codigo_df['EAN'] = codigo_df['EAN'].astype(str).str.strip()
-codigo_df['EAN'] = codigo_df['EAN'].apply(lambda x: re.sub(r'\D', '', x))
-codigo_df['EAN'] = pd.to_numeric(dismed_df['EAN'], errors='coerce')
-
-# VERIFICA O NOME CORRETO DA COLUNA EAN NA PLANILHA PMC
-pmc_df = pd.read_excel(planilhas_pmc)
-
-# AJUSTANDO O NOME DA COLUNA EAN SE NECESSÁRIO NA PLANILHA PMC
-ean_col_pmc = 'EAN 1' if 'EAN 1' in pmc_df.columns else 'EAN'
-pmc_df[ean_col_pmc] = pmc_df[ean_col_pmc].astype(str).str.strip()  # REMOVENDO ESPAÇOS
-pmc_df[ean_col_pmc] = pmc_df[ean_col_pmc].apply(lambda x: re.sub(r'\D', '', x))  # REMOVENDO CARACTERES NÃO NUMÉRICOS
-pmc_df['EAN'] = pd.to_numeric(pmc_df[ean_col_pmc], errors='coerce')  # CONVERTENDO PARA NUMÉRICO E CRIANDO COLUNA 'EAN' PADRONIZADA
-
-# AJUSTANDO O NOME DA COLUNA EAN SE NECESSÁRIO NA PLANILHA PMPF
-pmpf_df = pd.read_excel(planilhas_pmpf)
-
-ean_col_pmpf = 'EAN 1' if 'EAN 1' in pmpf_df.columns else 'EAN'
-pmpf_df[ean_col_pmpf] = pmpf_df[ean_col_pmpf].astype(str).str.strip()  # REMOVENDO ESPAÇOS
-pmpf_df[ean_col_pmpf] = pmpf_df[ean_col_pmpf].apply(lambda x: re.sub(r'\D', '', x))  # REMOVENDO CARACTERES NÃO NUMÉRICOS
-pmpf_df['EAN'] = pd.to_numeric(pmpf_df[ean_col_pmpf], errors='coerce')  # CONVERTENDO PARA NUMÉRICO E CRIANDO COLUNA 'EAN' PADRONIZADA
-
-# ATUALIZANDO PMC COM BASE NO MERGE
-if 'PMC 18%' in pmc_df.columns:
-    codigo_df = codigo_df.merge(pmc_df[['EAN', 'PMC 18%']], on='EAN', how='left')  # MERGE COM PMC
-    codigo_df['PMC'] = codigo_df.apply(lambda row: row['PMC 18%'] if row['PMC'] == 0.00 else row['PMC'], axis=1)  # ATUALIZANDO PMC
-    codigo_df.drop(columns=['PMC 18%'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
-
-# ATUALIZANDO PMPF COM BASE NO MERGE
-if 'PMPF' in pmpf_df.columns:
-    codigo_df = codigo_df.merge(pmpf_df[['EAN', 'PMPF']], on='EAN', how='left', suffixes=('', '_new'))  # MERGE COM PMPF
-    codigo_df['PMPF'] = codigo_df.apply(lambda row: row['PMPF_new'] if row['PMPF'] == 0.00 else row['PMPF'], axis=1)  # ATUALIZANDO PMPF
-    codigo_df.drop(columns=['PMPF_new'], inplace=True)  # REMOVENDO A COLUNA AUXILIAR
-
-# NOME DOS ARQUIVOS DE SAÍDA
-alerta1 = r"P:\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
-alerta2 = r"P:\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
-alerta3 = r"P:\\TESTE\\TESTE\\TESTE\\TESTE\\TESTE\\ALERTA {data_atual}.xlsx"
+"""
 
 
-# CRIAR DIRETORIOS SE ELES NAO EXISTIREM
-os.makedirs(os.path.dirname(alerta1), exist_ok=True)
-os.makedirs(os.path.dirname(alerta2), exist_ok=True)
-os.makedirs(os.path.dirname(alerta3), exist_ok=True)
+# =========================
+# FUNÇÕES AUXILIARES
+# =========================
 
-# SALVANDO O DATAFRAME ATUALIZADO EM AMBOS OS ARQUIVOS
-dismed_df.to_excel(alerta1.format(data_atual=data_atual), index=False)
-dismed_df.to_excel(alerta2.format(data_atual=data_atual), index=False)
-dismed_df.to_excel(alerta3.format(data_atual=data_atual), index=False)  
-
-# RESULTADO FINAL
-print(dismed_df)
-
-# MENSAGENS DE CONFIRMAÇÃO
-print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {alerta1.format(data_atual=data_atual)}")
-print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {alerta2.format(data_atual=data_atual)}")
-print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {alerta3.format(data_atual=data_atual)}")
+def limpar_ean_serie(serie: pd.Series) -> pd.Series:
+    """Remove espaços, caracteres não numéricos e converte para número."""
+    serie = serie.astype(str).str.strip()
+    serie = serie.apply(lambda x: re.sub(r"\D", "", x))
+    return pd.to_numeric(serie, errors="coerce")
 
 
+# =========================
+# PIPELINE PRINCIPAL
+# =========================
 
+def main() -> None:
+    # 1) Buscar dados do banco
+    conexao = pyodbc.connect(dados_conexao)
+    df = pd.read_sql_query(SQL_ALERTAS, conexao)
+    conexao.close()
+
+    # 2) Limpeza do EAN vindo do banco
+    df["EAN"] = limpar_ean_serie(df["EAN"])
+
+    # 3) Carregar planilha de PMC
+    pmc_df = pd.read_excel(planilha_pmc_path)
+
+    # Descobre automaticamente se a coluna é "EAN 1" ou "EAN"
+    ean_col_pmc = "EAN 1" if "EAN 1" in pmc_df.columns else "EAN"
+    pmc_df[ean_col_pmc] = limpar_ean_serie(pmc_df[ean_col_pmc])
+    pmc_df.rename(columns={ean_col_pmc: "EAN"}, inplace=True)
+
+    # 4) Carregar planilha de PMPF
+    pmpf_df = pd.read_excel(planilha_pmpf_path)
+    ean_col_pmpf = "EAN 1" if "EAN 1" in pmpf_df.columns else "EAN"
+    pmpf_df[ean_col_pmpf] = limpar_ean_serie(pmpf_df[ean_col_pmpf])
+    pmpf_df.rename(columns={ean_col_pmpf: "EAN"}, inplace=True)
+
+    # 5) Atualizar PMC (quando vier 0 do banco)
+    if "PMC 18%" in pmc_df.columns:
+        df = df.merge(pmc_df[["EAN", "PMC 18%"]], on="EAN", how="left")
+        df["PMC"] = df.apply(
+            lambda row: row["PMC 18%"] if float(row["PMC"]) == 0.0 else row["PMC"],
+            axis=1,
+        )
+        df.drop(columns=["PMC 18%"], inplace=True)
+
+    # 6) Atualizar PMPF (quando vier 0 do banco)
+    if "PMPF" in pmpf_df.columns:
+        df = df.merge(
+            pmpf_df[["EAN", "PMPF"]],
+            on="EAN",
+            how="left",
+            suffixes=("", "_new"),
+        )
+        df["PMPF"] = df.apply(
+            lambda row: row["PMPF_new"] if float(row["PMPF"]) == 0.0 else row["PMPF"],
+            axis=1,
+        )
+        df.drop(columns=["PMPF_new"], inplace=True)
+
+    # 7) Salvar saídas
+    data_atual = datetime.now().strftime("%d-%m-%Y")
+
+    output_paths = [
+        r"P:\TESTE\TESTE\ALERTA {data_atual}.xlsx",
+        r"P:\TESTE\TESTE\ALERTA {data_atual}.xlsx",
+        r"P:\TESTE\TESTE\TESTE\TESTE\TESTE\ALERTA {data_atual}.xlsx",
+    ]
+
+    for path_template in output_paths:
+        path = path_template.format(data_atual=data_atual)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        df.to_excel(path, index=False)
+        print(f"DADOS ATUALIZADOS FORAM SALVOS NO ARQUIVO: {path}")
+
+    print("Processo concluído com sucesso.")
+
+
+if __name__ == "__main__":
+    main()
