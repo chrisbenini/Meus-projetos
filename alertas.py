@@ -1,5 +1,5 @@
 """
-ALERTAS.py
+alertas.py
 
 Ajuste de produtos sem PMC/PMPF e geração de planilhas de alerta
 a partir de dados do banco (SQL Server) + planilhas base PMC/PMPF.
