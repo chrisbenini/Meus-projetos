@@ -32,7 +32,7 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate
 # macOS/Linux: source .venv/bin/activate
 
-# 3) Instale dependências (se existir requirements.txt)
+# 3) Instale dependências
 pip install -r requirements.txt
 
 # 4) Rode o que precisar
