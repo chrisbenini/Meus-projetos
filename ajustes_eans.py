@@ -1,5 +1,5 @@
 """
-EANS.py
+ajustes_eans.py
 
 Identificação de EANs inválidos (diferente de 13 dígitos)
 a partir de dados do banco (SQL Server).
