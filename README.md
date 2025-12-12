@@ -36,5 +36,5 @@ Meus-projetos/
 │  ├─ ajustes_eans.py    # Validação de EANs (dígitos incorretos)
 │  ├─ convert_XML.py     # Aplicação desktop para converter XML de NF-e em Excel
 │  └─ margem.py          # Cálculo de margens (bruta e líquida) e planilhas de alerta
-├─ requirements.txt       # Dependências do projeto
-└─ README.md              # Esta documentação
+├─ README.md             # Esta documentação
+└─ requirements.txt      # Dependências do projeto
